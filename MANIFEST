@@ -2,6 +2,7 @@ Changes
 PalmDoc.pm
 Makefile.PL
 MANIFEST
+README
 test.pl
 examples/palmdoc1.pl
 examples/palmdoc2.pl

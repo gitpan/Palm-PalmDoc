@@ -7,7 +7,7 @@ require Exporter;
 
 @ISA = qw(Exporter);
 @EXPORT = qw();
-$VERSION = '0.0.5';
+$VERSION = '0.0.6';
 
 # Palm::PalmDoc Constructor
 
@@ -49,8 +49,8 @@ sub body {
 my $self = shift;
 if (@_) { 
 $self->{BODY} = shift;
+$self->length(length $self->{BODY});
 if ($self->compression) { $self->{BODY} = $self->compr_text($self->{BODY}); }
-else { $self->length(length $self->{BODY}); }
 }
 return($self->{BODY});
 }
@@ -395,7 +395,7 @@ Palm::PalmDoc - Perl extension for PalmDoc format
   my $doc = PalmDoc->new({INFILE=>"foo.txt",OUTFILE=>"foo.pdb",TITLE=>"foo bar",COMPRESS=>1});
   $doc->read_text();
   $doc->write_text();
-  
+
   # Example 2
   use Palm::PalmDoc;
   my $doc = PalmDoc->new({OUTFILE=>"foo.pdb",TITLE=>"foo bar"});
@@ -548,7 +548,7 @@ found on http://www.gnu.org/copyleft/gpl.html
 
 =head1 VERSION
 
-This is Palm::PalmDoc 0.0.5.
+This is Palm::PalmDoc 0.0.6.
 
 =head1 AUTHOR
 
