@@ -7,7 +7,7 @@ require Exporter;
 
 @ISA = qw(Exporter);
 @EXPORT = qw();
-$VERSION = '0.09';
+$VERSION = '0.10';
 
 # Palm::PalmDoc Constructor
 
@@ -69,7 +69,7 @@ sub body {
      if ($sep eq " ") 
      { $self->{BODY} .= "\n"; }
    }
- $self->length(length $self->{BODY});
+ $self->length(CORE::length $self->{BODY});
  if ($self->compression && !$self->compressed) { $self->compressed(1); $self->{BODY} = $self->compr_text($self->{BODY}); }
  }
  return($self->{BODY});
@@ -193,7 +193,7 @@ my $pdb_version = 0;
 my $pdb_create_time = 0x11111111;			# Palm Desktop demands
 my $pdb_modify_time = 0x11111111;			# a timestamp.
 my $pdb_backup_time = 0;
-my $pdb_modificationNumber;
+my $pdb_modificationNumber = 0;
 my $pdb_appInfoID = 0;
 my $pdb_sortInfoID = 0;
 my $pdb_type = $DOC_TYPE;
@@ -211,7 +211,7 @@ my $pdb_header = pack("a32nnNNNNNNa4a4NNn",$self->title,$pdb_attributes,
 					 $pdb_id_seed,$pdb_id_nextRecordList,
 					 $pdb_numRecords);
 
-if ( (length $pdb_header) != 78) { die "pdb_header malformed\n"; }
+if ( (CORE::length $pdb_header) != 78) { die "pdb_header malformed\n"; }
 
 my $doc_header_size = 16;
 my $doc_version = 1 + $self->compression;
@@ -224,7 +224,7 @@ my $doc_reserved2 = 0;
 my $doc_header = pack("nnNnnN",$doc_version,$reserved1,$doc_doc_size,
 			     $doc_num_recs,$doc_rec_size,$doc_reserved2);
 
-if ( (length $doc_header) != 16) { die "doc_header malformed\n"; }
+if ( (CORE::length $doc_header) != 16) { die "doc_header malformed\n"; }
 
 my $pdb_rec_header_size = 8;
 my $pdb_rec_attributes = 0x40;		# We'll fake this, 0x40 = 'dirty'
@@ -237,7 +237,7 @@ my $pdb_rec_header_template = "Nccn";
 
 	$header_buff = $pdb_header . pack($pdb_rec_header_template,
 					  $pdb_rec_offset, $pdb_rec_attributes,
-					  "a",$pdb_rec_uniqueID );
+					  ord('a'),$pdb_rec_uniqueID );
 	$pdb_rec_offset += $doc_header_size;	# Add offset for doc_header
 
 	for ($x = 0; $x < $pdb_numRecords - 1; $x++) {	
@@ -248,7 +248,7 @@ my $pdb_rec_header_template = "Nccn";
 		$pdb_rec_offset += $self->{BLOCK_SIZE}[$x];
 		++$pdb_rec_uniqueID;
 		$header_buff .=	pack($pdb_rec_header_template,$pdb_rec_offset,
-				     $pdb_rec_attributes,"a",$pdb_rec_uniqueID);
+				     $pdb_rec_attributes,ord('a'),$pdb_rec_uniqueID);
 	}
 	
 	$header_buff .= 0x00 . 0x00;
@@ -306,7 +306,7 @@ for ($x = 1; $x <= $numrecords; $x++) {
 
 	}
 		
-$block_len = length($block);	
+$block_len = CORE::length($block);	
 
 $index = 0;
 
@@ -424,8 +424,8 @@ while ( $index < $block_len ) {
 }
 }
 
-$self->{BLOCK_SIZE}[$x] = (length ($compr_buff)) - $total_compr_size;
-$total_compr_size = length ($compr_buff);
+$self->{BLOCK_SIZE}[$x] = (CORE::length ($compr_buff)) - $total_compr_size;
+$total_compr_size = CORE::length ($compr_buff);
 
 }
 
@@ -703,6 +703,8 @@ Josef Moellers.
 
 A HUGE thanks goes to Josef Moellers for fixing 2 BIG bugs in the code.
 
+Thanks also to Scott Wiersdorf for adding warning cleanness.
+
 =head1 TODO
 
 Since my primary goal was to port the core, most of the features present in
@@ -716,7 +718,7 @@ found on http://www.gnu.org/copyleft/gpl.html
 
 =head1 VERSION
 
-This is Palm::PalmDoc 0.09.
+This is Palm::PalmDoc 0.10.
 
 =head1 AUTHOR
 

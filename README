@@ -210,6 +210,8 @@ THANK YOU!!!!
 
 A HUGE thanks goes to Josef Moellers for fixing 2 BIG bugs in the code.
 
+Thanks also to Scott Wiersdorf for adding warning cleanness.
+
 TODO
 
 Since my primary goal was to port the core, most of the features present in
@@ -223,7 +225,7 @@ found on http://www.gnu.org/copyleft/gpl.html
 
 VERSION
 
-This is Palm::PalmDoc 0.09.
+This is Palm::PalmDoc 0.10.
 
 AUTHOR
 
