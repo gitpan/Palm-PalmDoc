@@ -7,7 +7,7 @@ require Exporter;
 
 @ISA = qw(Exporter);
 @EXPORT = qw();
-$VERSION = '0.0.6';
+$VERSION = '0.07';
 
 # Palm::PalmDoc Constructor
 
@@ -18,6 +18,8 @@ sub new {
  $self->{TITLE} = "PalmDoc Document";
  $self->{INFILE} = undef;
  $self->{OUTFILE} = undef;
+ $self->{INFILEH} = undef;
+ $self->{OUTFILEH} = undef;
  $self->{LENGTH} = 0;
  $self->{BODY} = undef;
  $self->{COMPRESS} = 0;
@@ -79,7 +81,6 @@ $self->{COMPRESS} = shift @_ ? 1 : 0;
 return($self->{COMPRESS});
 }
 
-
 sub infile {
 my $self = shift;
 if (@_) { 
@@ -98,6 +99,19 @@ $self->{OUTFILE} =~ s/([;\`'\\\|"*~<>^\(\)\[\]\{\}\$\n\r\0\t\s])//g;
 return($self->{OUTFILE});
 }
 
+sub parse_from_file {
+my $self = shift;
+$self->infile(shift) if @_;
+$self->outfile(shift) if @_;
+}
+
+sub parse_from_filehandle {
+my $self = shift;
+($self->{INFILEH},$self->{OUTFILEH}) = @_;
+$self->{INFILEH} ||= \*STDIN;
+$self->{OUTFILEH} ||= \*STDOUT;
+}
+
 sub read_text {
 my $self = shift;
 if ($self->infile) {
@@ -106,6 +120,11 @@ open (IN, "<".$self->infile) || die "Can't open ".$self->infile.": $!\n";
   $self->body(<IN>);
 }
 close (IN);
+if ($self->{INFILEH} && !$self->infile)
+{ local $/ = undef;
+  $self->body(<INFILEH>);
+}
+$self->{INFILEH} and close($self->{INFILEH}) || die "Can't close input filehandle after reading: $!";
 if ($self->compression) { $self->body($self->compr_text($self->body)); }
 return ($self->body);
  } else { return(0); }
@@ -113,11 +132,19 @@ return ($self->body);
 
 sub write_text {
 my $self = shift;
-if ($self->outfile && $self->body) {
-open (OUT,">".$self->outfile) || die "Can't open ".$self->outfile.": $!\n";
-binmode(OUT);
-print OUT $self->pdb_header(),$self->body;	
-close (OUT);
+if ($self->body) {
+ if ($self->outfile) {
+  open (OUT,">".$self->outfile) || die "Can't open ".$self->outfile.": $!\n";
+  binmode(OUT);
+  print OUT $self->pdb_header(),$self->body;	
+  close (OUT);
+ }
+ if ($self->{OUTFILEH} && !$self->outfile) {
+   binmode($self->{OUTFILEH});
+   my $foo = $self->{OUTFILEH};
+   print $foo $self->pdb_header,$self->body;
+   $self->{OUTFILEH} and close($self->{OUTFILEH}) || die "Can't close output filehandle after reading: $!";
+ }
 return (1); } else { return(0); }
 }
 
@@ -403,6 +430,26 @@ Palm::PalmDoc - Perl extension for PalmDoc format
   $doc->body("Foo Bar"x100);
   $doc->write_text();
 
+  # Example 3
+  use Palm::PalmDoc;
+  my $doc = Palm::PalmDoc->new(INFILE=>"README");
+  $doc->compression(1); #Compression is off by default
+  $doc->read_text();
+  open(F,">readme.pdb") || die $!;
+  print F $doc->pdb_header,$doc->body;
+  close(F);
+
+  # Example 4
+  use Palm::PalmDoc;
+  my $doc = Palm::PalmDoc->new();
+  $doc->parse_from_file("README");
+  open(F,">readme.pdb") || die $!;
+  $doc->parse_from_filehandle("",\*F);
+  $doc->compression(1); #Compression is off by default
+  $doc->read_text();
+  $doc->write_text();
+
+
 =head1 DESCRIPTION
 
 This module can format ASCII text into a PalmDoc PDB file.
@@ -432,31 +479,55 @@ or as
 Keys are always uppercased (even though they may not be passed as such). 
 Possible keys are:
 
+=back
+
+=over 3
 
 =item INFILE
 
+=back
+
   The input filename
+
+=over 3
 
 =item OUTFILE
 
+=back
+
   The output filename
+
+=over 3
 
 =item TITLE
 
+=back
+
   The document title
+
+=over 3
 
 =item BODY
 
+=back
+
   The document body
 
+=over 3
+
 =item COMPRESS
+
+=back
 
   Boolean to indicate compression
 
 
 
+=over 3
 
 =item body($body)
+
+=back
 
 This is a plain getter/setter function except that it also sets the required 
 length. The same action can be performed by setting the appropriate hash 
@@ -464,8 +535,11 @@ key/value pair in the constructor or by using the read_text function.
 
   $doc->body("Foo Bar"x100);
 
+=over 3
 
 =item title($title)
+
+=back
 
 This is a plain getter/setter function for the title. The same action can be 
 performed by setting the appropriate hash key/value pair in the constructor.
@@ -473,25 +547,64 @@ performed by setting the appropriate hash key/value pair in the constructor.
   $doc->title("Foo Bar Baz");
 
 
+=over 3
+
 =item infile($filename)
+
+=back
 
 This is a plain getter/setter function for the Input filename. The same 
 action can be performed by setting the appropriate hash key/value pair in 
-the constructor.
+the constructor. If both an input file and an input filehandle are defined,
+the input file is used.
 
   $doc->infile("foo.txt");
 
+=over 3
 
 =item outfile($filename)
 
+=back
+
 This is a plain getter/setter function for the Output filename.	The same 
 action can be performed by setting the appropriate hash key/value pair in 
-the constructor.
+the constructor. If both an output file and an output filehandle are defined,
+the output file is used.
 
   $doc->outfile("foo.pdb");
 
 
+=over 3
+
+=item parse_from_file($inputfile,$outputfile)
+
+=back
+
+parse_from_file uses infile() and outfile() to set the filenames. If both an 
+input file and an input filehandle are defined, the input file is used. Same
+applies for output file and output filehandle.
+
+
+  $doc->parse_from_file("foo.txt","foo.pdb");
+
+=over 3
+
+=item parse_from_filehandle($inputfilehandle,$outputfilehandle)
+
+=back
+
+parse_from_filehandle takes filehandle as arguments. When no input filehandle 
+is defined STDIN is used. When no output filehandle is defined STDOUT is used.
+If both an input file and an input filehandle are defined, the input file is 
+used. Same applies for output file and output filehandle.
+
+  $doc->parse_from_filehandle(\*FOO,\*BAR);
+
+=over 3
+
 =item read_text()
+
+=back
 
 This function uses the inputfile property to read the body from a file. It 
 also sets the required length. This function returns the text read if 
@@ -499,8 +612,11 @@ successfull or a false if not successfull.
 
   $doc->read_text();
 
+=over 3
 
 =item write_text()
+
+=back
 
 This function uses the outputfile property to write the header and body to a 
 file. The headers are generated by the pdb_header function. This function 
@@ -508,13 +624,17 @@ returns true if successfull or false if not successfull.
 
   $doc->write_text();
 
+=over 3
 
 =item pdb_header()
+
+=back
 
 This function generates the correct PDB headers for the body and length. 
 You only need to use this function if you're writing the body to a file 
 manually since write_text() already used pdb_header. This function returns 
-the generated header which should precede the converted body.
+the generated header which should precede the converted body. Writing to an
+already opened filehandle can be done with parse_from_filehandle too.
 
   use Palm::PalmDoc;
   my $doc = PalmDoc->new();
@@ -524,7 +644,11 @@ the generated header which should precede the converted body.
   print FOO $doc->pdb_header(),$doc->body();
   close(FOO);
 
+=over 3
+
 =item compression($boolean)
+
+=back
 
 This function toggles the compression. By default compression is off.
 The same action can be performed by setting the appropriate hash 
@@ -532,8 +656,6 @@ key/value pair in the constructor.
 
   $doc->compression(1); #Turn PalmDoc Compression on
 
-
-=back
 
 =head1 TODO
 
@@ -548,7 +670,7 @@ found on http://www.gnu.org/copyleft/gpl.html
 
 =head1 VERSION
 
-This is Palm::PalmDoc 0.0.6.
+This is Palm::PalmDoc 0.07.
 
 =head1 AUTHOR
 

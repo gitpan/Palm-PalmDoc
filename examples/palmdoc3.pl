@@ -3,7 +3,7 @@
 use strict;
 use Palm::PalmDoc;
 
-$doc = Palm::PalmDoc->new(INFILE=>"README");
+my $doc = Palm::PalmDoc->new(INFILE=>"README");
 $doc->compression(1); #Compression is off by default
 $doc->read_text();
 open(F,">readme.pdb") || die $!;

@@ -21,3 +21,8 @@ Revision history for Perl extension Palm::PalmDoc.
 	
 0.0.6 Mon Oct 29 13:00:00 2001
 	- Fixed bug in Compressed body handling
+
+0.07  Mon Nov 12 23:00:00 2001
+	- Updated README
+	- Improved CPANability
+	- Added parse_from_filehandle and parse_from_file
