@@ -7,7 +7,7 @@ require Exporter;
 
 @ISA = qw(Exporter);
 @EXPORT = qw();
-$VERSION = '0.07';
+$VERSION = '0.08';
 
 # Palm::PalmDoc Constructor
 
@@ -20,7 +20,6 @@ sub new {
  $self->{OUTFILE} = undef;
  $self->{INFILEH} = undef;
  $self->{OUTFILEH} = undef;
- $self->{LENGTH} = 0;
  $self->{BODY} = undef;
  $self->{COMPRESS} = 0;
  $self->{BLOCK_SIZE} = [];
@@ -43,6 +42,7 @@ sub new {
    $self->title($params{TITLE}) if exists $params{TITLE};
    $self->compression($params{COMPRESS}) if exists $params{COMPRESS};
    $self->body($params{BODY}) if exists $params{BODY};
+   $self->compressed(0);
  }
  return $self;
 }
@@ -52,7 +52,7 @@ my $self = shift;
 if (@_) { 
 $self->{BODY} = shift;
 $self->length(length $self->{BODY});
-if ($self->compression) { $self->{BODY} = $self->compr_text($self->{BODY}); }
+if ($self->compression && !$self->compressed) { $self->compressed(1); $self->{BODY} = $self->compr_text($self->{BODY}); }
 }
 return($self->{BODY});
 }
@@ -79,6 +79,14 @@ if (@_) {
 $self->{COMPRESS} = shift @_ ? 1 : 0;
 }
 return($self->{COMPRESS});
+}
+
+sub compressed {
+my $self = shift;
+if (@_) {
+$self->{COMPRESSED} = shift @_ ? 1 : 0;
+}
+return($self->{COMPRESSED});
 }
 
 sub infile {
@@ -125,7 +133,7 @@ if ($self->{INFILEH} && !$self->infile)
   $self->body(<INFILEH>);
 }
 $self->{INFILEH} and close($self->{INFILEH}) || die "Can't close input filehandle after reading: $!";
-if ($self->compression) { $self->body($self->compr_text($self->body)); }
+if ($self->compression && !$self->compressed) { $self->compressed(1); $self->body($self->compr_text($self->body)); }
 return ($self->body);
  } else { return(0); }
 }
@@ -216,8 +224,8 @@ my $pdb_rec_header_template = "Nccn";
 
 	for ($x = 0; $x < $pdb_numRecords - 1; $x++) {	
 
-		if ($x > 0 ) 
-			{ $self->{BLOCK_SIZE}[$x] = $RECORD_SIZE_MAX; }
+#		if ($x > 0 ) 
+#			{ $self->{BLOCK_SIZE}[$x] = $RECORD_SIZE_MAX; }
 			
 		$pdb_rec_offset += $self->{BLOCK_SIZE}[$x];
 		++$pdb_rec_uniqueID;
@@ -398,10 +406,10 @@ while ( $index < $block_len ) {
 }
 }
 
-}
-
 $self->{BLOCK_SIZE}[$x] = (length ($compr_buff)) - $total_compr_size;
 $total_compr_size = length ($compr_buff);
+
+}
 
 return ($compr_buff);	
 }
@@ -656,6 +664,9 @@ key/value pair in the constructor.
 
   $doc->compression(1); #Turn PalmDoc Compression on
 
+=head1 THANK YOU!!!!
+
+A HUGE thanks goes to Josef Moellers for fixing 2 BIG bugs in the code.
 
 =head1 TODO
 
@@ -670,7 +681,7 @@ found on http://www.gnu.org/copyleft/gpl.html
 
 =head1 VERSION
 
-This is Palm::PalmDoc 0.07.
+This is Palm::PalmDoc 0.08.
 
 =head1 AUTHOR
 

@@ -194,6 +194,9 @@ key/value pair in the constructor.
 
   $doc->compression(1); #Turn PalmDoc Compression on
 
+THANK YOU!!!!
+
+A HUGE thanks goes to Josef Moellers for fixing 2 BIG bugs in the code.
 
 TODO
 
@@ -208,7 +211,7 @@ found on http://www.gnu.org/copyleft/gpl.html
 
 VERSION
 
-This is Palm::PalmDoc 0.07.
+This is Palm::PalmDoc 0.08.
 
 AUTHOR
 

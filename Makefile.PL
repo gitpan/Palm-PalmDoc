@@ -4,7 +4,5 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'	=> 'Palm::PalmDoc',
     'VERSION_FROM' => 'PalmDoc.pm', # finds $VERSION
-    'LIBS'	=> [''],   # e.g., '-lm' 
-    'DEFINE'	=> '',     # e.g., '-DHAVE_SOMETHING' 
-    'INC'	=> '',     # e.g., '-I/usr/include/other' 
+    'dist' => {COMPRESS=>'gzip',SUFFIX=>'gz'},
 );
