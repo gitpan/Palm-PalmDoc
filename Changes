@@ -29,3 +29,6 @@ Revision history for Perl extension Palm::PalmDoc.
 
 0.08  Sun Feb 24 23:00:00 2002
 	- Implemented submitted patches by Josef Moellers to fix 2 bugs
+        
+0.09  Sun Sept 23:30:00 2002
+	- Implemented new feature by Josef Moellers

@@ -102,6 +102,8 @@ Possible keys are:
 - COMPRESS
   Boolean to indicate compression
 
+- IGNORENL
+  Boolean to indicate to ingoring newlines.
 
 * body($body)
 
@@ -194,6 +196,16 @@ key/value pair in the constructor.
 
   $doc->compression(1); #Turn PalmDoc Compression on
 
+* ignorenl($boolean)
+
+This function toggles the ignoring the newlines. By default newlines are not 
+ignored. The same action can be performed by setting the appropriate hash 
+key/value pair in the constructor. Credit for this functionality goes to 
+Josef Moellers.
+
+  $doc->ignorenl(1); #Ignore newlines
+
+
 THANK YOU!!!!
 
 A HUGE thanks goes to Josef Moellers for fixing 2 BIG bugs in the code.
@@ -211,11 +223,13 @@ found on http://www.gnu.org/copyleft/gpl.html
 
 VERSION
 
-This is Palm::PalmDoc 0.08.
+This is Palm::PalmDoc 0.09.
 
 AUTHOR
 
 This Module was written by Hendrik Van Belleghem (beatnik@quickndirty.org)
+
+Bugs fixed & feature added by Josef Moellers
 
 SEE ALSO
 

@@ -7,7 +7,7 @@ require Exporter;
 
 @ISA = qw(Exporter);
 @EXPORT = qw();
-$VERSION = '0.08';
+$VERSION = '0.09';
 
 # Palm::PalmDoc Constructor
 
@@ -23,6 +23,7 @@ sub new {
  $self->{BODY} = undef;
  $self->{COMPRESS} = 0;
  $self->{BLOCK_SIZE} = [];
+ $self->{IGNORENL} = 0;
  bless($self,$class);
  if (@_) 
  { my $ref = shift;
@@ -35,12 +36,13 @@ sub new {
    { unshift @_,$ref;
      if (!(@_ % 2)) 
      { %params = @_; }
-    }
+   }
    foreach (keys %params) { my $tkey = uc $_; my $tvalue = $params{$_}; delete $params{$_}; $params{$tkey} = $tvalue; } 
    $self->infile($params{INFILE}) if exists $params{INFILE};
    $self->outfile($params{OUTFILE}) if exists $params{OUTFILE};
    $self->title($params{TITLE}) if exists $params{TITLE};
    $self->compression($params{COMPRESS}) if exists $params{COMPRESS};
+   $self->ignorenl($params{IGNORENL}) if exists $params{IGNORENL};
    $self->body($params{BODY}) if exists $params{BODY};
    $self->compressed(0);
  }
@@ -48,112 +50,128 @@ sub new {
 }
 
 sub body {
-my $self = shift;
-if (@_) { 
-$self->{BODY} = shift;
-$self->length(length $self->{BODY});
-if ($self->compression && !$self->compressed) { $self->compressed(1); $self->{BODY} = $self->compr_text($self->{BODY}); }
-}
-return($self->{BODY});
+ my $self = shift;
+ if (@_) { 
+ $self->{BODY} = shift;
+ if ($self->ignorenl) 
+    { my @body = split(/\n/, $self->{BODY});
+      my $sep = "";
+      $self->{BODY} = "";
+      foreach (@body) 
+      { if (/^\s*$/)
+        { $self->{BODY} .= "\n";
+          $sep = "";
+        } else 
+        { $self->{BODY} .= "$sep$_";
+          $sep = " ";
+        }
+      }
+     if ($sep eq " ") 
+     { $self->{BODY} .= "\n"; }
+   }
+ $self->length(length $self->{BODY});
+ if ($self->compression && !$self->compressed) { $self->compressed(1); $self->{BODY} = $self->compr_text($self->{BODY}); }
+ }
+ return($self->{BODY});
 }
 
 sub length {
-my $self = shift;
-if (@_) { 
-$self->{LENGTH} = shift; 
-}
-return($self->{LENGTH});
+ my $self = shift;
+ if (@_) { $self->{LENGTH} = shift; }
+ return($self->{LENGTH});
 }
 
 sub title {
-my $self = shift;
-if (@_) { 
-$self->{TITLE} = shift; 
-}
-return($self->{TITLE});
+ my $self = shift;
+ if (@_) { $self->{TITLE} = shift; }
+ return($self->{TITLE});
 }
 
 sub compression {
-my $self = shift;
-if (@_) { 
-$self->{COMPRESS} = shift @_ ? 1 : 0;
-}
-return($self->{COMPRESS});
+ my $self = shift;
+ if (@_) { $self->{COMPRESS} = shift @_ ? 1 : 0; }
+ return($self->{COMPRESS});
 }
 
 sub compressed {
-my $self = shift;
-if (@_) {
-$self->{COMPRESSED} = shift @_ ? 1 : 0;
-}
-return($self->{COMPRESSED});
+ my $self = shift;
+ if (@_) { $self->{COMPRESSED} = shift @_ ? 1 : 0; }
+ return($self->{COMPRESSED});
 }
 
-sub infile {
-my $self = shift;
-if (@_) { 
-$self->{INFILE} = shift; 
-$self->{INFILE} =~ s/([;\`'\\\|"*~<>^\(\)\[\]\{\}\$\n\r\0\t\s])//g;
+sub ignorenl {
+ my $self = shift;
+ if (@_) { $self->{IGNORENL} = shift @_ ? 1 : 0; }
+ return($self->{IGNORENL});
 }
-return($self->{INFILE});
+
+
+sub infile {
+ my $self = shift;
+ if (@_) 
+ { $self->{INFILE} = shift; 
+   $self->{INFILE} =~ s/([;\`'\\\|"*~<>^\(\)\[\]\{\}\$\n\r\0\t\s])//g;
+ }
+ return($self->{INFILE});
 }
 
 sub outfile {
-my $self = shift;
-if (@_) { 
-$self->{OUTFILE} = shift; 
-$self->{OUTFILE} =~ s/([;\`'\\\|"*~<>^\(\)\[\]\{\}\$\n\r\0\t\s])//g; 
-}
-return($self->{OUTFILE});
+ my $self = shift;
+ if (@_) { 
+ $self->{OUTFILE} = shift; 
+ $self->{OUTFILE} =~ s/([;\`'\\\|"*~<>^\(\)\[\]\{\}\$\n\r\0\t\s])//g; 
+ }
+ return($self->{OUTFILE});
 }
 
 sub parse_from_file {
-my $self = shift;
-$self->infile(shift) if @_;
-$self->outfile(shift) if @_;
+ my $self = shift;
+ $self->infile(shift) if @_;
+ $self->outfile(shift) if @_;
 }
 
 sub parse_from_filehandle {
-my $self = shift;
-($self->{INFILEH},$self->{OUTFILEH}) = @_;
-$self->{INFILEH} ||= \*STDIN;
-$self->{OUTFILEH} ||= \*STDOUT;
+ my $self = shift;
+ ($self->{INFILEH},$self->{OUTFILEH}) = @_;
+ $self->{INFILEH} ||= \*STDIN;
+ $self->{OUTFILEH} ||= \*STDOUT;
 }
 
 sub read_text {
-my $self = shift;
-if ($self->infile) {
-open (IN, "<".$self->infile) || die "Can't open ".$self->infile.": $!\n";
-{ local $/ = undef;
-  $self->body(<IN>);
-}
-close (IN);
-if ($self->{INFILEH} && !$self->infile)
-{ local $/ = undef;
-  $self->body(<INFILEH>);
-}
-$self->{INFILEH} and close($self->{INFILEH}) || die "Can't close input filehandle after reading: $!";
-if ($self->compression && !$self->compressed) { $self->compressed(1); $self->body($self->compr_text($self->body)); }
-return ($self->body);
+ my $self = shift;
+ if ($self->infile) 
+ { open (IN, "<".$self->infile) || die "Can't open ".$self->infile.": $!\n";
+   { local $/ = undef;
+     $self->body(<IN>);
+   }
+   close (IN);
+   if ($self->{INFILEH} && !$self->infile)
+   { local $/ = undef;
+     $self->body(<INFILEH>);
+   }
+   $self->{INFILEH} and close($self->{INFILEH}) || die "Can't close input filehandle after reading: $!";
+   if ($self->compression && !$self->compressed) { $self->compressed(1); $self->body($self->compr_text($self->body)); }
+   return ($self->body);
  } else { return(0); }
 }
 
 sub write_text {
-my $self = shift;
-if ($self->body) {
- if ($self->outfile) {
-  open (OUT,">".$self->outfile) || die "Can't open ".$self->outfile.": $!\n";
-  binmode(OUT);
-  print OUT $self->pdb_header(),$self->body;	
-  close (OUT);
- }
- if ($self->{OUTFILEH} && !$self->outfile) {
-   binmode($self->{OUTFILEH});
-   my $foo = $self->{OUTFILEH};
-   print $foo $self->pdb_header,$self->body;
-   $self->{OUTFILEH} and close($self->{OUTFILEH}) || die "Can't close output filehandle after reading: $!";
- }
-return (1); } else { return(0); }
+ my $self = shift;
+ if ($self->body) 
+ { if ($self->outfile) 
+   { open (OUT,">".$self->outfile) || die "Can't open ".$self->outfile.": $!\n";
+     binmode(OUT);
+     print OUT $self->pdb_header(),$self->body;	
+     close (OUT);
+   }
+   if ($self->{OUTFILEH} && !$self->outfile) 
+   { binmode($self->{OUTFILEH});
+     my $foo = $self->{OUTFILEH};
+     print $foo $self->pdb_header,$self->body;
+     $self->{OUTFILEH} and close($self->{OUTFILEH}) || die "Can't close output filehandle after reading: $!";
+   }
+   return (1); 
+  } else { return(0); }
 }
 
 sub pdb_header {
@@ -417,7 +435,6 @@ return ($compr_buff);
 
 1;
 __END__
-# Below is the stub of documentation for your module. You better edit it!
 
 =head1 NAME
 
@@ -529,7 +546,11 @@ Possible keys are:
 
   Boolean to indicate compression
 
+=item IGNORENL
 
+=back
+
+  Boolean to indicate to ingoring newlines.
 
 =over 3
 
@@ -664,6 +685,20 @@ key/value pair in the constructor.
 
   $doc->compression(1); #Turn PalmDoc Compression on
 
+=over 3
+
+=item ignorenl($boolean)
+
+=back
+
+This function toggles the ignoring the newlines. By default newlines are not 
+ignored. The same action can be performed by setting the appropriate hash 
+key/value pair in the constructor. Credit for this functionality goes to 
+Josef Moellers.
+
+  $doc->ignorenl(1); #Ignore newlines
+
+
 =head1 THANK YOU!!!!
 
 A HUGE thanks goes to Josef Moellers for fixing 2 BIG bugs in the code.
@@ -681,7 +716,7 @@ found on http://www.gnu.org/copyleft/gpl.html
 
 =head1 VERSION
 
-This is Palm::PalmDoc 0.08.
+This is Palm::PalmDoc 0.09.
 
 =head1 AUTHOR
 
