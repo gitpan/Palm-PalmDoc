@@ -7,7 +7,7 @@ require Exporter;
 
 @ISA = qw(Exporter);
 @EXPORT = qw();
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 # Palm::PalmDoc Constructor
 
@@ -317,7 +317,7 @@ while ( $index < $block_len ) {
 
 		$y = 1;			# found at least one!
 
-		while ( (substr($block,$index + ($y + 1),1)  =~ 
+		while ( (substr($block,$index + $y ,1)  =~ 
 			      /[\200-\377]/) &&
 			($y < 8) ) {
 
@@ -413,7 +413,7 @@ while ( $index < $block_len ) {
 							# Set the high bit
 							# and add to output 
 							# buffer.
-	         		$compr_buff .= pack("c", ord ($byte2) | 0x80 );
+	         		$compr_buff .= pack("C", ord ($byte2) | 0x80 );
 				$index += 2;		# Compressed 2 bytes
 	
 		} else {

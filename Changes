@@ -42,3 +42,5 @@ Revision history for Perl extension Palm::PalmDoc.
 0.12  Thu Jun 20 00:05:00 2003
 	- Fixed Title legnth thanks to John G. Smith
 
+0.13  Thu Feb 24 20:00:00 2005
+        - Fixed 2 bugs - patch submitted by Helge Oldach

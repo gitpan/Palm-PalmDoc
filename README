@@ -229,13 +229,15 @@ found on http://www.gnu.org/copyleft/gpl.html
 
 VERSION
 
-This is Palm::PalmDoc 0.12.
+This is Palm::PalmDoc 0.13.
 
 AUTHOR
 
 This Module was written by Hendrik Van Belleghem (beatnik@quickndirty.org)
 
 Bugs fixed & feature added by Josef Moellers
+
+Bugs fixed by Helge Oldach
 
 SEE ALSO
 
