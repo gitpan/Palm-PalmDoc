@@ -7,7 +7,7 @@ require Exporter;
 
 @ISA = qw(Exporter);
 @EXPORT = qw();
-$VERSION = '0.11';
+$VERSION = '0.12';
 
 # Palm::PalmDoc Constructor
 
@@ -181,7 +181,7 @@ my $DISP_BITS = 11;
 my $DOC_CREATOR = "REAd";
 my $DOC_TYPE = "TEXt";
 my $RECORD_SIZE_MAX = 4096;	# 4k record size
-my $dmDBNameLength = 32;	# 32 chars + 1 null
+my $dmDBNameLength = 32;	# 31 chars + 1 null
 
 my $pdb_rec_offset;		# PDB record offset
 my $header_buff = "";		# Temporary buffer to build the headers in.
@@ -203,7 +203,7 @@ my $pdb_id_nextRecordList = 0;
 my $pdb_numRecords = (int ($self->length / 4096)) + 2;	# +1 for record 0
 							# +1 for fractional part
 						
-my $pdb_header = pack("a32nnNNNNNNa4a4NNn",$self->title,$pdb_attributes,
+my $pdb_header = pack("a32nnNNNNNNa4a4NNn",substr($self->title,0,31)."\0",$pdb_attributes,
 					 $pdb_version,$pdb_create_time,
 					 $pdb_modify_time,$pdb_backup_time,
 					 $pdb_modificationNumber,$pdb_appInfoID,
@@ -709,6 +709,8 @@ Thanks also to Scott Wiersdorf for adding warning cleanness.
 
 Waves to Steve Swantz for pointing me to the typos in the POD and README.
 
+John G. Smith for pointing out that titles can't be longer than 31 chars and providing fix for it.
+
 =head1 TODO
 
 Since my primary goal was to port the core, most of the features present in
@@ -722,7 +724,7 @@ found on http://www.gnu.org/copyleft/gpl.html
 
 =head1 VERSION
 
-This is Palm::PalmDoc 0.11.
+This is Palm::PalmDoc 0.12.
 
 =head1 AUTHOR
 

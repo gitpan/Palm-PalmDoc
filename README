@@ -214,6 +214,8 @@ Thanks also to Scott Wiersdorf for adding warning cleanness.
 
 Waves to Steve Swantz for pointing me to the typos in the POD and README.
 
+John G. Smith for pointing out that titles can't be longer than 31 chars and providing fix for it.
+
 TODO
 
 Since my primary goal was to port the core, most of the features present in
@@ -227,7 +229,7 @@ found on http://www.gnu.org/copyleft/gpl.html
 
 VERSION
 
-This is Palm::PalmDoc 0.11.
+This is Palm::PalmDoc 0.12.
 
 AUTHOR
 
