@@ -7,7 +7,7 @@ require Exporter;
 
 @ISA = qw(Exporter);
 @EXPORT = qw();
-$VERSION = '0.10';
+$VERSION = '0.11';
 
 # Palm::PalmDoc Constructor
 
@@ -444,13 +444,13 @@ Palm::PalmDoc - Perl extension for PalmDoc format
 
   # Example 1
   use Palm::PalmDoc;
-  my $doc = PalmDoc->new({INFILE=>"foo.txt",OUTFILE=>"foo.pdb",TITLE=>"foo bar",COMPRESS=>1});
+  my $doc = Palm::PalmDoc->new({INFILE=>"foo.txt",OUTFILE=>"foo.pdb",TITLE=>"foo bar",COMPRESS=>1});
   $doc->read_text();
   $doc->write_text();
 
   # Example 2
   use Palm::PalmDoc;
-  my $doc = PalmDoc->new({OUTFILE=>"foo.pdb",TITLE=>"foo bar"});
+  my $doc = Palm::PalmDoc->new({OUTFILE=>"foo.pdb",TITLE=>"foo bar"});
   $doc->compression(1);
   $doc->body("Foo Bar"x100);
   $doc->write_text();
@@ -491,15 +491,15 @@ and BODY. They need to be passed in hash context (or a list/array mimicking
 a hash). A reference to a hash is also accepted, as well as a reference to 
 an array.
 
-  my $doc = PalmDoc->new({INFILE=>"foo.txt",OUTFILE=>"foo.pdb"});
+  my $doc = Palm::PalmDoc->new({INFILE=>"foo.txt",OUTFILE=>"foo.pdb"});
 
 is same as 
 
-  my $doc = PalmDoc->new(INFILE=>"foo.txt",OUTFILE=>"foo.pdb");
+  my $doc = Palm::PalmDoc->new(INFILE=>"foo.txt",OUTFILE=>"foo.pdb");
 
 or as 
 
-  my $doc = PalmDoc->new("INFILE","foo.txt","OUTFILE","foo.pdb");
+  my $doc = Palm::PalmDoc->new("INFILE","foo.txt","OUTFILE","foo.pdb");
 
 Keys are always uppercased (even though they may not be passed as such). 
 Possible keys are:
@@ -545,6 +545,8 @@ Possible keys are:
 =back
 
   Boolean to indicate compression
+
+=over 3
 
 =item IGNORENL
 
@@ -666,7 +668,7 @@ the generated header which should precede the converted body. Writing to an
 already opened filehandle can be done with parse_from_filehandle too.
 
   use Palm::PalmDoc;
-  my $doc = PalmDoc->new();
+  my $doc = Palm::PalmDoc->new();
   $doc->body("Foo Bar"x1000);
   $doc->title("Foo Bar Baz");
   open(FOO,">foo.pdb") || die $!;
@@ -705,6 +707,8 @@ A HUGE thanks goes to Josef Moellers for fixing 2 BIG bugs in the code.
 
 Thanks also to Scott Wiersdorf for adding warning cleanness.
 
+Waves to Steve Swantz for pointing me to the typos in the POD and README.
+
 =head1 TODO
 
 Since my primary goal was to port the core, most of the features present in
@@ -718,7 +722,7 @@ found on http://www.gnu.org/copyleft/gpl.html
 
 =head1 VERSION
 
-This is Palm::PalmDoc 0.10.
+This is Palm::PalmDoc 0.11.
 
 =head1 AUTHOR
 
